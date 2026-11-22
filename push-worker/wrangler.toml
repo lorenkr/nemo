@@ -8,7 +8,7 @@ crons = ["* * * * *"]
 # Created on first deploy with: npx wrangler kv namespace create PITKIT
 [[kv_namespaces]]
 binding = "PITKIT"
-id = "REPLACE_WITH_KV_ID"
+id = "e5bb3974338e4fff898c3c0f8cc3af7d"
 
 [vars]
 VAPID_PUBLIC = "BOKAza5dLZjEyCWo6ow-TvhSlN0t54k3AwNmJDI8TtM9fl-0xwW2dvWTvgI_8pkJnEZsOObUKwjazKSL9JC2kEQ"
