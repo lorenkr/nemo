@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>פתקית</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="פתקית">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#fbf6e8">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Rubik:wght@400;500;700&family=Amatic+SC:wght@700&family=Secular+One&family=Playpen+Sans+Hebrew:wght@400;600&display=swap">
+<script src="config.js"></script>
+<style>
+/* Layout: one phone-width column, topics as a 2-up grid, sticky notes carousel, bottom tab bar, bottom sheet for editing.
+   Three looks redefine the same tokens; each is a deliberate light world. */
+:root{
+  color-scheme: light;
+  --bg:#fbe9e7;
+  --card:rgba(255,255,255,.86); --card-solid:#fff;
+  --ink:#4b3a55; --muted:#8c7b94; --line:#ecdfe9;
+  --accent:#e07aa5; --accent-soft:#fbe0ec; --accent-ink:#fff;
+  --ok:#5fb38a;
+  --c1:#ffd6e2; --c2:#d4f2e4; --c3:#ffe3c9; --c4:#dcd8fb; --c5:#d6ecfb; --c6:#fff1b8; --c7:#f7d2ef; --c8:#e8e1d3;
+  --f-display:"Varela Round","Rubik",system-ui,sans-serif;
+  --f-body:"Varela Round","Rubik",system-ui,sans-serif;
+  --f-size-display:1.7rem;
+  --radius:22px; --radius-sm:14px;
+  --shadow:0 6px 22px rgba(160,100,140,.14);
+  --border:1px solid rgba(255,255,255,.9);
+  --page-bg: radial-gradient(circle at 85% 0%, #ffd9e6 0, transparent 55%),
+             radial-gradient(circle at 0% 30%, #e6defc 0, transparent 50%),
+             radial-gradient(circle at 70% 100%, #d9f3ea 0, transparent 50%), #fdf0ee;
+  --bar:#fdf0ee;
+  --tilt:0deg;
+  --pink:#ee5c9c; --pink-soft:#ffe1ee;
+}
+body[data-look="notebook"]{
+  --card:transparent; --card-solid:#fffdf6;
+  --ink:#2c3a63; --muted:#7a86a6; --line:#cfdcef;
+  --accent:#d9534f; --accent-soft:#fbe3df; --accent-ink:#fff;
+  --c1:#ffd9d6; --c2:#d9efd8; --c3:#ffe6c2; --c4:#e0dcf7; --c5:#d5e8f7; --c6:#fff3a6;
+  --f-display:"Amatic SC","Rubik",cursive; --f-size-display:2.4rem;
+  --f-body:"Rubik",system-ui,sans-serif;
+  --radius:4px; --radius-sm:4px; --shadow:none; --border:0;
+  --paper:#fbf6e8; --bar:var(--paper);
+  --page-bg: linear-gradient(to left, transparent 30px, #f1a7a3 30px, #f1a7a3 32px, transparent 32px),
+             repeating-linear-gradient(to bottom, transparent 0 31px, #d7e3f3 31px 32px), var(--paper);
+}
+body[data-look="notebook"][data-tone="white"]{--paper:#ffffff}
+body[data-look="notebook"][data-tone="cream"]{--paper:#fbf6e8}
+body[data-look="notebook"][data-tone="yellow"]{--paper:#fff5c4}
+body[data-look="notebook"][data-pattern="grid"]{--page-bg: linear-gradient(#d3dff1 1px, transparent 1px) 0 0/24px 24px, linear-gradient(90deg, #d3dff1 1px, transparent 1px) 0 0/24px 24px, var(--paper)}
+body[data-look="notebook"][data-pattern="dots"]{--page-bg: radial-gradient(circle, #b4c3dc 1.4px, transparent 1.9px) 0 0/22px 22px, var(--paper)}
+body[data-look="notebook"][data-pattern="blank"]{--page-bg: var(--paper)}
+body[data-look="stickers"]{
+  --card:#fff; --card-solid:#fff;
+  --ink:#24324a; --muted:#5c6b80; --line:#24324a;
+  --accent:#ff6f91; --accent-soft:#ffe0e8; --accent-ink:#fff;
+  --c1:#ffb3c7; --c2:#9fe8c4; --c3:#ffcf99; --c4:#c3b8ff; --c5:#a8dcff; --c6:#ffe36e;
+  --f-display:"Secular One","Rubik",sans-serif; --f-size-display:1.8rem;
+  --f-body:"Rubik",system-ui,sans-serif;
+  --radius:18px; --radius-sm:12px;
+  --shadow:3px 4px 0 #24324a; --border:2px solid #24324a;
+  --page-bg: radial-gradient(#ffffff99 2px, transparent 2.5px) 0 0/22px 22px, #c9f0e1;
+  --bar:#c9f0e1;
+  --tilt:-1.2deg;
+}
+body[data-hand="round"]{--f-body:"Playpen Sans Hebrew","Amatic SC","Rubik",cursive}
+body[data-hand="narrow"]{--f-body:"Amatic SC","Rubik",cursive;font-size:20px}
+
+*{box-sizing:border-box}
+html{background:var(--bar)}
+body{margin:0;min-height:100vh;background:var(--page-bg);background-attachment:fixed;color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bar);z-index:25}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.shell{max-width:460px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:calc(14px + env(safe-area-inset-top,0px)) calc(110px + env(safe-area-inset-bottom,0px))}
+
+h1,h2,h3{font-family:var(--f-display);font-weight:400;margin:0;text-wrap:balance}
+h1{font-size:var(--f-size-display);line-height:1.15}
+h2{font-size:calc(var(--f-size-display)*.8)}
+body[data-look="notebook"] h1,body[data-look="notebook"] h2{font-weight:700}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.date-today{color:var(--muted);font-size:13px}
+.back{background:var(--card);border-radius:99px;padding:6px 14px;box-shadow:var(--shadow);border:var(--border)}
+body[data-look="notebook"] .back{background:var(--card-solid);border:1px solid var(--line)}
+
+.bubble{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:var(--border);box-shadow:var(--shadow);border-radius:var(--radius);padding:14px 16px;margin:8px 0 20px}
+.bubble .face{flex:none;width:38px;height:38px;border-radius:50%;background:var(--accent-soft);display:grid;place-items:center;font-size:20px}
+.bubble p{margin:0}
+.bubble p+p{margin-top:4px}
+body[data-look="notebook"] .bubble{background:var(--c6);transform:rotate(-1deg);border-radius:2px;box-shadow:0 2px 0 rgba(0,0,0,.06)}
+
+/* topics grid */
+.drawers{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.drawer{position:relative;text-align:right;border:var(--border);background:var(--dc);border-radius:var(--radius);padding:14px;min-height:118px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--shadow);transition:transform .15s}
+.drawer:nth-child(odd){transform:rotate(var(--tilt))}
+.drawer:nth-child(even){transform:rotate(calc(var(--tilt) * -1))}
+.drawer:active{transform:scale(.97)}
+.drawer .emo{font-size:26px;line-height:1}
+.drawer .name{font-weight:500;font-size:16px}
+.drawer .peek{font-size:12.5px;opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drawer .count{position:absolute;top:12px;left:12px;background:var(--card-solid);border-radius:99px;font-size:12px;padding:1px 9px;font-variant-numeric:tabular-nums}
+body[data-look="notebook"] .drawer{border-radius:2px;box-shadow:0 3px 0 rgba(44,58,99,.08);border-top:14px solid rgba(255,255,255,.55)}
+.drawer.new{background:transparent;border:2px dashed var(--muted);box-shadow:none;align-items:center;justify-content:center;color:var(--muted)}
+.drawer.new .emo{font-size:30px}
+
+/* items */
+.section-label{font-size:12px;letter-spacing:.06em;color:var(--muted);margin:22px 4px 8px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.linkbtn{border:0;background:none;color:var(--accent);font-size:13px;padding:4px}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.item{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:var(--border);border-radius:var(--radius-sm);padding:12px 14px;box-shadow:var(--shadow);position:relative;transition:opacity .4s}
+body[data-look="notebook"] .item{background:transparent;box-shadow:none;border-bottom:1px solid var(--line);border-radius:0;padding:10px 4px}
+.item .body{flex:1;min-width:0;text-align:right;border:0;background:none;padding:0}
+.item .text{font-size:16px;overflow-wrap:anywhere}
+.item .meta{font-size:12px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:12px;border-radius:99px;padding:3px 10px;background:var(--dc,var(--accent-soft));font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.strong{background:var(--accent);color:var(--accent-ink)}
+.chip.ghost{background:transparent;border:1px solid var(--line)}
+body[data-look="stickers"] .chip{border:1.5px solid var(--ink)}
+.check{flex:none;width:30px;height:30px;border-radius:50%;border:2px solid var(--accent);background:transparent;display:grid;place-items:center;padding:0;margin-top:1px}
+.check svg{width:16px;height:16px;stroke:var(--accent-ink);stroke-width:3;fill:none;stroke-dasharray:24;stroke-dashoffset:24}
+.item.done .check,.item.popping .check,.item.routine-done .check{background:var(--ok);border-color:var(--ok)}
+.item.done .check svg,.item.popping .check svg,.item.routine-done .check svg{stroke-dashoffset:0;transition:stroke-dashoffset .35s .05s}
+.item.popping .check{animation:pop .45s cubic-bezier(.3,1.8,.5,1)}
+.item.popping .text{text-decoration:line-through;text-decoration-color:var(--ok);text-decoration-thickness:2px}
+.item.done{opacity:.5}
+.item.done .text{text-decoration:line-through;text-decoration-thickness:1.5px}
+.item.done .chips{display:none}
+.item.routine-done{opacity:.6}
+.item.routine-done .chips .when{display:none}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
+.heart{flex:none;border:0;background:none;padding:2px 4px;line-height:1;font-size:20px;opacity:.28;filter:saturate(.5);transition:transform .2s,opacity .2s}
+.heart[aria-pressed="true"]{opacity:1;filter:none}
+.heart:active{transform:scale(1.3)}
+.item.flash,.envelope.flash{animation:flash 2s ease-out}
+@keyframes flash{0%,55%{box-shadow:0 0 0 4px var(--pink)}100%{box-shadow:0 0 0 0 transparent}}
+.spark{position:fixed;pointer-events:none;font-size:16px;z-index:50;animation:fly .9s ease-out forwards}
+@keyframes fly{from{transform:translate(0,0) scale(.6);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.1);opacity:0}}
+.again{display:flex;gap:8px;flex-wrap:wrap}
+.again button{border:1px dashed var(--muted);background:var(--card-solid);border-radius:99px;padding:6px 12px;font-size:13.5px}
+.empty{padding:16px;text-align:center;color:var(--muted);font-size:14px}
+
+body[data-hand="narrow"] .item .text{font-size:23px;font-weight:700;line-height:1.2}
+body[data-hand="narrow"] .item .meta,body[data-hand="narrow"] .chip,body[data-hand="narrow"] .date-today,body[data-hand="narrow"] .drawer .peek,body[data-hand="narrow"] .hint,body[data-hand="narrow"] .field>span{font-size:17px;font-weight:700}
+body[data-hand="narrow"] .drawer .name{font-size:22px;font-weight:700}
+body[data-hand="round"] .item .text{font-size:16.5px}
+
+/* favorites pill */
+.fav-pill{display:flex;align-items:center;gap:8px;width:100%;border:0;background:var(--pink-soft);color:var(--ink);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;text-align:right;font-size:15px}
+.fav-pill>span:first-child{font-size:19px}
+.fav-pill .n{margin-inline-start:auto;background:var(--pink);color:#fff;border-radius:99px;padding:1px 10px;font-size:13px}
+.from{font-size:12px;color:var(--muted);margin:14px 4px 6px}
+
+/* sticky notes */
+.notes{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px 4px 16px;margin:4px 0 8px;align-items:stretch;-webkit-overflow-scrolling:touch}
+.note{flex:0 0 84%;scroll-snap-align:center;background:var(--note-bg,var(--c6));border:var(--border);box-shadow:var(--shadow);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-height:120px;min-width:0}
+.note:nth-child(3n+2){--note-bg:var(--pink-soft)}
+.note:nth-child(3n){--note-bg:var(--c5)}
+.note.assistant{--note-bg:var(--card-solid);flex-direction:row;align-items:flex-start;gap:10px}
+.note.assistant .face{flex:none;width:38px;height:38px;border-radius:50%;background:var(--accent-soft);display:grid;place-items:center;font-size:20px}
+.note.assistant p{margin:0}.note.assistant p+p{margin-top:4px}
+body[data-look="notebook"] .note{border-radius:2px;transform:rotate(-1deg);box-shadow:0 2px 0 rgba(0,0,0,.06)}
+body[data-look="notebook"] .note:nth-child(even){transform:rotate(1deg)}
+body[data-look="notebook"] .note.assistant{--note-bg:var(--c6)}
+.note .content{flex:1;overflow-wrap:anywhere;min-height:40px}
+.note .content[contenteditable="true"]{outline:2px dashed var(--pink);border-radius:8px;padding:6px 8px;background:rgba(255,255,255,.65);min-height:80px;-webkit-user-select:text;user-select:text}
+.note .stamp{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.note-tools{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.note-tools button,.note-tools select{border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.7);color:var(--ink);border-radius:8px;padding:4px 9px;font:inherit;font-size:13px}
+.note-tools select{max-width:170px}
+.note-tools button:disabled{opacity:.3}
+.note-tools .go{background:var(--pink);color:#fff;border-color:var(--pink)}
+.note-add{flex:0 0 74px;border:2px dashed var(--muted);border-radius:var(--radius);background:transparent;color:var(--muted);font-size:13px;line-height:1.3}
+.ilink{display:inline-block;background:rgba(255,255,255,.85);border:1.5px solid var(--pink);color:var(--ink);border-radius:99px;padding:0 9px;text-decoration:none;font-size:.92em;cursor:pointer;margin:1px 0}
+.colors{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
+.title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px}
+.icon-btn{border:var(--border);background:var(--card-solid);border-radius:99px;padding:5px 12px;font-size:13px;box-shadow:var(--shadow)}
+body[data-look="notebook"] .icon-btn{border:1px solid var(--line)}
+
+/* capsule */
+.months{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.month{border:var(--border);background:var(--card);border-radius:var(--radius-sm);padding:8px 6px;text-align:center;font-size:13px;min-height:62px;box-shadow:var(--shadow)}
+body[data-look="notebook"] .month{background:var(--card-solid);border:1px solid var(--line)}
+.month .yr{font-size:10.5px;color:var(--muted)}
+.month .dots{display:flex;justify-content:center;gap:3px;margin-top:4px;min-height:8px}
+.month .dots i{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.month.has{background:var(--c6)}
+.envelope{background:var(--c6);border:var(--border);border-radius:var(--radius-sm);padding:14px 16px;box-shadow:var(--shadow);display:flex;gap:12px;align-items:center}
+.envelope .seal{font-size:26px}
+.envelope .body{flex:1;min-width:0;text-align:right;border:0;background:none;padding:0}
+.envelope .hidden-text{filter:blur(6px);user-select:none}
+.envelope .when{font-size:12.5px;opacity:.75;font-variant-numeric:tabular-nums}
+
+/* settings */
+.panel{background:var(--card-solid);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+body[data-look="notebook"] .panel{border:1px solid var(--line)}
+.panel h2{font-size:calc(var(--f-size-display)*.7)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:transparent;border-radius:99px;padding:6px 13px;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--card-solid);border-color:var(--ink)}
+.status{font-size:13.5px;padding:8px 12px;border-radius:12px;background:var(--accent-soft)}
+.status.good{background:#dff3e8}
+
+/* bottom nav */
+.nav{position:fixed;inset:auto 0 0 0;z-index:20;padding:8px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;justify-content:center;pointer-events:none}
+.nav-inner{pointer-events:auto;display:flex;align-items:center;gap:6px;background:var(--card-solid);border:var(--border);box-shadow:0 8px 30px rgba(80,50,90,.18);border-radius:99px;padding:6px}
+body[data-look="notebook"] .nav-inner{border:1px solid var(--line)}
+.nav-inner button{border:0;background:none;border-radius:99px;padding:8px 13px;font-size:14px;white-space:nowrap}
+.nav-inner button[aria-current="page"]{background:var(--accent-soft)}
+.nav-inner .add{background:var(--accent);color:var(--accent-ink);font-size:22px;width:46px;height:46px;padding:0;display:grid;place-items:center}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(40,25,50,.35);z-index:30}
+.sheet{position:fixed;inset:auto 0 0 0;z-index:31;background:var(--card-solid);border-radius:26px 26px 0 0;max-height:88vh;overflow:auto;padding:18px max(18px,env(safe-area-inset-right,0px)) calc(22px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));animation:up .28s ease-out}
+.sheet-in{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field>span{font-size:13px;color:var(--muted)}
+.field input[type=text],.field input[type=date],.field input[type=time],.field select{font:inherit;font-size:16px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--card-solid);color:var(--ink);width:100%;min-height:46px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pick{border:1.5px solid var(--line);background:transparent;border-radius:99px;padding:6px 12px;font-size:14px}
+.pick[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.toggle{display:flex;gap:10px;align-items:center;font-size:14.5px}
+.toggle input{width:20px;height:20px;accent-color:var(--accent);flex:none}
+.save{border:0;background:var(--accent);color:var(--accent-ink);border-radius:16px;padding:13px;font-size:16px}
+.ghost-btn{border:1.5px solid var(--line);background:transparent;border-radius:14px;padding:10px 14px;font-size:15px}
+.danger{border:1.5px solid var(--accent);color:var(--accent);background:transparent;border-radius:12px;padding:8px 14px;font-size:14px}
+.danger.solid{background:var(--accent);color:var(--accent-ink)}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+.swatch{width:34px;height:34px;border-radius:50%;border:2px solid rgba(0,0,0,.08);padding:0}
+.swatch[aria-pressed="true"]{border-color:var(--ink);transform:scale(1.1)}
+.emo-pick{font-size:22px;width:44px;height:44px;padding:0;border-radius:12px;border:1.5px solid var(--line);background:transparent}
+.emo-pick[aria-pressed="true"]{background:var(--pink-soft);border-color:var(--pink)}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body data-look="notebook" data-hand="round" data-pattern="lines" data-tone="cream">
+<div class="shell"><main id="screen"></main></div>
+<nav class="nav"><div class="nav-inner" id="nav"></div></nav>
+<div id="sheet"></div>
+
+<script>
+(function(){
+const CFG=window.PITKIT_CONFIG||{};
+const DAY=864e5;
+const now=()=>new Date();
+const sod=d=>{const x=new Date(d);x.setHours(0,0,0,0);return x};
+const addDays=(d,n)=>{const x=sod(d);x.setDate(x.getDate()+n);return x};
+const diffDays=d=>Math.round((sod(d)-sod(now()))/DAY);
+const pad=n=>String(n).padStart(2,'0');
+const fDate=d=>{d=new Date(d);return d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear()};
+const fShort=d=>{d=new Date(d);return d.getDate()+'.'+(d.getMonth()+1)};
+const fDT=d=>{d=new Date(d);return fDate(d)+' · '+pad(d.getHours())+':'+pad(d.getMinutes())};
+const dayKey=d=>{d=new Date(d);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+const todayKey=()=>dayKey(now());
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inDays=n=>n===0?'היום':n===1?'מחר':n===2?'בעוד יומיים':n<0?'עבר המועד':'בעוד '+n+' ימים';
+const daysWord=n=>n===1?'יום':n===2?'יומיים':n+' ימים';
+const iso=d=>new Date(d).toISOString();
+const dInput=d=>{d=new Date(d);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+const atNoon=v=>iso(new Date(v+'T12:00'));
+
+const BASE=[
+  {id:'pharm',name:'סופר פארם',emoji:'🧴',color:'--c1',type:'list',again:['משחת שיניים','שמפו','מגבונים לחים','קרם הגנה','דאודורנט']},
+  {id:'cancel',name:'לבטל בזמן',emoji:'✂️',color:'--c3',type:'deadline'},
+  {id:'health',name:'בריאות',emoji:'💊',color:'--c2',type:'routine'},
+  {id:'speech',name:'תרגילים לקלינאית',emoji:'🗣️',color:'--c4',type:'routine'},
+  {id:'clothes',name:'בגדים',emoji:'👗',color:'--c5',type:'list',again:['גרביים','חולצה בסיסית','גרביונים']},
+  {id:'capsule',name:'קפסולת זמן',emoji:'💌',color:'--c6',type:'capsule'}
+];
+const EMOJIS=['🛒','🎁','🐶','📚','🏠','🌿','✈️','🧾','💄','🎂','🧸','☕','💡','🎨','🍰','🚗'];
+const COLORS=['--c1','--c7','--c3','--c6','--c2','--c5','--c4','--c8'];
+const TYPES=[{t:'list',l:'רשימה (כמו קניות)'},{t:'deadline',l:'דברים עם תאריך אחרון'},{t:'routine',l:'משהו שחוזר כל יום'}];
+const HEART='<span aria-hidden="true">💗</span>';
+
+/* ---------- state ---------- */
+const KEY='pitkit-v1';
+const DEFAULTS={look:'notebook',hand:'round',paper:{pattern:'lines',tone:'cream'},remindTime:'10:00'};
+let custom=[], DRAWERS=BASE, drawerColors={}, items=[], notes=null, settings=Object.assign({},DEFAULTS);
+let push={device:null,subscription:null,lastSync:null,lastError:null};
+try{
+  const s=JSON.parse(localStorage.getItem(KEY)||'null');
+  if(s){items=s.items||[];notes=s.notes;custom=s.custom||[];drawerColors=s.drawerColors||{};settings=Object.assign({},DEFAULTS,s.settings||{});push=Object.assign(push,s.push||{})}
+}catch(e){}
+if(!notes) notes=[{id:1,scope:'home',created:iso(now()),html:'<b>ברוכה הבאה לפתקית 💗</b><br>זו פתקית נעוצה. אפשר לערוך אותה, למחוק אותה, או להוסיף עוד עם ＋.<br>כדי לקבל התראות לטלפון: ⚙️ הגדרות.'}];
+if(!push.device){const b=crypto.getRandomValues(new Uint8Array(24));push.device=btoa(String.fromCharCode(...b)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+const syncDrawers=()=>{DRAWERS=BASE.slice(0,5).concat(custom,BASE.slice(5)).map(d=>drawerColors[d.id]?Object.assign({},d,{color:drawerColors[d.id]}):d)};
+syncDrawers();
+const D=id=>DRAWERS.find(d=>d.id===id);
+function persist(){try{localStorage.setItem(KEY,JSON.stringify({items,notes,custom,drawerColors,settings,push}))}catch(e){}}
+const save=()=>{persist();scheduleSync()};
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+
+let ui={view:'home',drawer:null,showArchive:false,peek:{},sheet:null,highlight:null,confirmDel:false,editNote:null,draft:null,confirmNote:null,colorPick:false,confirmImport:null,msg:null};
+const nextId=arr=>Math.max(0,...arr.map(x=>x.id))+1;
+
+const isRoutineDone=i=>i.doneDate===todayKey();
+const isOpen=i=>!i.done&&!i.archived;
+const capsuleVisible=i=>diffDays(i.target)<=30;
+const remindOn=i=>addDays(i.deadline,-i.before);
+
+/* ---------- sticky notes ---------- */
+function sanitize(html){
+  const doc=new DOMParser().parseFromString('<div>'+html+'</div>','text/html');
+  const walk=node=>{let out='';node.childNodes.forEach(c=>{
+    if(c.nodeType===3){out+=esc(c.textContent);return}
+    if(c.nodeType!==1)return;
+    const tag=c.tagName;
+    if(tag==='BR')out+='<br>';
+    else if(tag==='B'||tag==='STRONG'||(c.style&&/bold|[6-9]00/.test(c.style.fontWeight)))out+='<b>'+walk(c)+'</b>';
+    else if(tag==='A'&&c.dataset.item)out+=`<a class="ilink" data-item="${parseInt(c.dataset.item,10)}">${esc(c.textContent)}</a>`;
+    else if(tag==='DIV'||tag==='P')out+='<br>'+walk(c);
+    else out+=walk(c);
+  });return out};
+  return walk(doc.body.firstChild).replace(/^(<br>)+/,'').replace(/(<br>)+$/,'');
+}
+function linkOptions(){
+  return DRAWERS.map(d=>{const its=items.filter(i=>i.drawer===d.id&&!i.archived);return its.length?`<optgroup label="${esc(d.emoji+' '+d.name)}">${its.map(i=>`<option value="${i.id}">${esc(i.text)}</option>`).join('')}</optgroup>`:''}).join('');
+}
+function noteCard(n,idx,total){
+  if(ui.editNote===n.id){
+    return `<div class="note" data-note="${n.id}">
+      <div class="content" id="ed-${n.id}" contenteditable="true" dir="rtl">${ui.draft!=null?ui.draft:n.html}</div>
+      <div class="note-tools">
+        <button type="button" data-act="bold" aria-label="מודגש"><b>B</b></button>
+        <select id="linkpick" aria-label="קישור לתזכורת"><option value="">🔗 קישור לתזכורת…</option>${linkOptions()}</select>
+        <button type="button" class="go" data-act="saveNote">שמירה</button>
+        <button type="button" data-act="cancelNote">ביטול</button>
+      </div></div>`;
+  }
+  const tools=ui.confirmNote===n.id
+    ?`<span>למחוק את הפתקית?</span><button type="button" class="go" data-act="delNote" data-id="${n.id}">כן</button><button type="button" data-act="keepNote">לא</button>`
+    :`<button type="button" data-act="editNote" data-id="${n.id}">✏️ עריכה</button>
+      <button type="button" data-act="moveNote" data-id="${n.id}" data-dir="-1" aria-label="להזיז ימינה" ${idx===0?'disabled':''}>→</button>
+      <button type="button" data-act="moveNote" data-id="${n.id}" data-dir="1" aria-label="להזיז שמאלה" ${idx===total-1?'disabled':''}>←</button>
+      <button type="button" data-act="askDelNote" data-id="${n.id}" aria-label="מחיקה">🗑</button>`;
+  return `<div class="note" data-note="${n.id}">
+    <div class="content">${n.html||'<span class="stamp">פתקית ריקה</span>'}</div>
+    <div class="stamp">נכתב ${fDT(n.created)}</div>
+    <div class="note-tools">${tools}</div></div>`;
+}
+function renderNotes(scope,assistantHTML){
+  const list=notes.filter(n=>n.scope===scope);
+  return `<div class="notes" aria-label="פתקיות">
+    ${assistantHTML?`<div class="note assistant"><div class="face" aria-hidden="true">🐣</div><div class="content">${assistantHTML}</div></div>`:''}
+    ${list.map((n,i)=>noteCard(n,i,list.length)).join('')}
+    <button type="button" class="note-add" data-act="addNote" data-scope="${scope}">＋<br>פתקית</button>
+  </div>`;
+}
+let lastRange=null;
+document.addEventListener('selectionchange',()=>{
+  const ed=document.querySelector('.content[contenteditable="true"]');const s=getSelection();
+  if(ed&&s.rangeCount){const r=s.getRangeAt(0);if(ed.contains(r.commonAncestorContainer))lastRange=r.cloneRange()}
+});
+function restoreRange(ed){
+  const cur=getSelection();
+  if(cur.rangeCount&&ed.contains(cur.getRangeAt(0).commonAncestorContainer))return;
+  ed.focus();const s=getSelection();s.removeAllRanges();
+  if(lastRange&&ed.contains(lastRange.commonAncestorContainer))s.addRange(lastRange);
+  else{const r=document.createRange();r.selectNodeContents(ed);r.collapse(false);s.addRange(r)}
+}
+function focusEditor(id){
+  const ed=document.getElementById('ed-'+id);if(!ed)return;
+  ed.closest('.note').scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+  lastRange=null;setTimeout(()=>restoreRange(ed),60);
+}
+function insertLink(itemId){
+  const ed=document.querySelector('.content[contenteditable="true"]');const it=items.find(i=>i.id==itemId);
+  if(!ed||!it)return;
+  restoreRange(ed);
+  const a=document.createElement('a');a.className='ilink';a.dataset.item=it.id;a.contentEditable='false';a.textContent=D(it.drawer).emoji+' '+it.text;
+  const r=getSelection().getRangeAt(0);r.deleteContents();
+  const sp=document.createTextNode(' ');r.insertNode(sp);r.insertNode(a);r.insertNode(document.createTextNode(' '));
+  r.setStartAfter(sp);r.collapse(true);const s=getSelection();s.removeAllRanges();s.addRange(r);lastRange=r.cloneRange();
+}
+function goItem(id){
+  const it=items.find(i=>i.id==id);if(!it)return;
+  const d=D(it.drawer);if(!d)return;
+  if(d.type==='capsule'){ui.view='capsule';ui.peek[it.id]=true}
+  else{ui.view='drawer';ui.drawer=d.id;ui.confirmDel=false;ui.colorPick=false;if(it.archived)ui.showArchive=true}
+  render();
+  const el=document.querySelector(`.item[data-id="${it.id}"], .envelope[data-id="${it.id}"]`);
+  if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('flash')}else scrollTo(0,0);
+}
+
+/* ---------- screens ---------- */
+function greeting(){const h=now().getHours();return h<5?'לילה טוב':h<12?'בוקר טוב':h<17?'צהריים טובים':h<21?'ערב טוב':'לילה טוב'}
+function homeBubble(){
+  const lines=[];
+  const dl=items.filter(i=>D(i.drawer)?.type==='deadline'&&isOpen(i)).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline))[0];
+  if(dl){const n=diffDays(dl.deadline);const r=remindOn(dl);lines.push(`רק מזכירה לך: <b>${esc(dl.text)}</b> עד ${fShort(dl.deadline)}, ${inDays(n)}.${diffDays(r)>0?` אני אזכיר שוב ב־${fShort(r)} 💛`:''}`)}
+  const r=items.filter(i=>D(i.drawer)?.type==='routine'&&!isRoutineDone(i)).length;
+  if(r) lines.push(`ויש ${r===1?'דבר קטן אחד':r+' דברים קטנים'} לעשות היום. בקצב שלך.`);
+  const soon=items.filter(i=>i.drawer==='capsule'&&isOpen(i)&&capsuleVisible(i));
+  if(soon.length) lines.push(`נפתח מכתב מקפסולת הזמן: <b>${esc(soon[0].text)}</b> 💌`);
+  if(!lines.length) lines.push('הכול רגוע כרגע. אם משהו עולה לך בראש, תכתבי לי ואני אשמור.');
+  return lines.map(l=>`<p>${l}</p>`).join('');
+}
+function drawerPeek(d){
+  const open=items.filter(i=>i.drawer===d.id&&isOpen(i));
+  if(d.type==='deadline'){const x=open.sort((a,b)=>new Date(a.deadline)-new Date(b.deadline))[0];return x?`הקרוב: עד ${fShort(x.deadline)}`:'אין מה לבטל 🎉'}
+  if(d.type==='routine'){if(!open.length)return 'ריק';const left=open.filter(i=>!isRoutineDone(i)).length;return left?`נשאר להיום: ${left}`:'הכול נעשה היום ✓'}
+  if(d.type==='capsule'){const x=open.sort((a,b)=>new Date(a.target)-new Date(b.target))[0];return x?`הבא: ${fDate(x.target)}`:'ריקה'}
+  return open.length?open.slice(0,3).map(i=>i.text).join(' · '):'ריק';
+}
+function renderHome(){
+  const d=now();
+  return `
+  <div class="top"><h1>${greeting()} ☁️</h1><span class="date-today">${d.toLocaleDateString('he-IL',{weekday:'long'})}, ${fDate(d)}</span></div>
+  ${renderNotes('home',homeBubble())}
+  <button type="button" class="fav-pill" data-act="nav" data-view="fav">${HEART}<span>המועדפים שלי</span><span class="n">${items.filter(i=>i.love&&isOpen(i)).length}</span></button>
+  <div class="drawers">${DRAWERS.map(dr=>{
+    const c=items.filter(i=>i.drawer===dr.id&&isOpen(i)).length;
+    return `<button type="button" class="drawer" style="--dc:var(${dr.color})" data-act="drawer" data-id="${dr.id}">
+      <span class="count">${c}</span><span class="emo">${dr.emoji}</span><span class="name">${esc(dr.name)}</span><span class="peek">${esc(drawerPeek(dr))}</span></button>`}).join('')}
+    <button type="button" class="drawer new" data-act="newDrawer"><span class="emo">＋</span><span class="name">נושא חדש</span></button>
+  </div>`;
+}
+function itemChips(i,d){
+  const c=[];
+  if(d.type==='deadline'){
+    const n=diffDays(i.deadline);
+    c.push(`<span class="chip strong">עד ${fDate(i.deadline)} · ${inDays(n)}</span>`);
+    c.push(`<span class="chip">🔔 ${fShort(remindOn(i))} (${daysWord(i.before)} לפני)</span>`);
+    if(i.early&&diffDays(addDays(i.deadline,-30))>=0) c.push(`<span class="chip">🗓 גם חודש לפני: ${fShort(addDays(i.deadline,-30))}</span>`);
+    if(i.nag) c.push(`<span class="chip ghost">🔁 מזכירה כל יום עד שתסמני</span>`);
+  }
+  if(d.type==='routine'){
+    (i.times||[]).forEach(t=>c.push(`<span class="chip when">⏰ ${t}</span>`));
+    c.push(`<span class="chip ghost">כל יום</span>`);
+    if(i.track) c.push(`<span class="chip">🌱 ${i.streak||0} ימים ברצף</span>`);
+  }
+  return c.length?`<div class="chips">${c.join('')}</div>`:'';
+}
+function itemRow(i,d){
+  const routine=d.type==='routine';
+  const rdone=routine&&isRoutineDone(i);
+  const cls=['item'];if(i.done)cls.push('done');if(rdone)cls.push('routine-done');
+  const meta=i.done&&i.doneAt?`נוצר ${fDT(i.created)} · סומן ${fDT(i.doneAt)}`:`נוצר ${fDT(i.created)}`;
+  return `<li class="${cls.join(' ')}" data-id="${i.id}" style="--dc:var(${d.color})">
+    <button type="button" class="check" data-act="check" data-id="${i.id}" aria-label="${i.done||rdone?'ביטול סימון':'סימון שעשיתי'}: ${esc(i.text)}"><svg viewBox="0 0 16 16"><path d="M3 8.5l3.2 3L13 4.5"/></svg></button>
+    <button type="button" class="body" data-act="editItem" data-id="${i.id}"><div class="text">${esc(i.text)}</div><div class="meta">${meta}${rdone?' · עשיתי היום ✓ מחר שוב':''}</div>${itemChips(i,d)}</button>
+    <button type="button" class="heart" data-act="love" data-id="${i.id}" aria-pressed="${!!i.love}" aria-label="מועדף">${HEART}</button>
+  </li>`;
+}
+function drawerBubble(d,open){
+  if(d.type==='deadline'){
+    const x=open.sort((a,b)=>new Date(a.deadline)-new Date(b.deadline))[0];
+    return x?`הכי דחוף: <b>${esc(x.text)}</b>. יש לך עד ${fDate(x.deadline)}, ואני אזכיר לך ב־${fShort(remindOn(x))} כדי שלא תחויבי בקנס.`:'אין שום דבר שצריך לבטל. איזה כיף.';
+  }
+  if(d.type==='routine') return 'סימון אחד ביום מספיק. אם פספסת יום, זה בסדר גמור, ממשיכים מחר.';
+  if(d.type==='list') return open.length?`יש ${open.length} דברים ברשימה. בפעם הבאה שתהיי בחנות, פשוט לסמן תוך כדי.`:'הרשימה ריקה. לחיצה על ＋ למטה מוסיפה.';
+  return '';
+}
+function renderDrawer(){
+  const d=D(ui.drawer);if(!d){ui.view='home';return renderHome()}
+  const mine=items.filter(i=>i.drawer===d.id);
+  let open=mine.filter(isOpen);
+  const done=mine.filter(i=>i.done&&!i.archived);
+  const arch=mine.filter(i=>i.archived);
+  open.sort((a,b)=>(!!b.love-!!a.love)||(d.type==='deadline'?new Date(a.deadline)-new Date(b.deadline):new Date(b.created)-new Date(a.created)));
+  if(d.type==='routine') open.sort((a,b)=>isRoutineDone(a)-isRoutineDone(b));
+  const again=(d.again||[]).filter(t=>!open.some(i=>i.text===t));
+  return `
+  <div class="top"><button type="button" class="back" data-act="home">→ חזרה</button><span class="date-today">${open.length} פתוחים</span></div>
+  <div class="title-row"><h1>${d.emoji} ${esc(d.name)}</h1><button type="button" class="icon-btn" data-act="colorPick" aria-expanded="${ui.colorPick}"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:var(${d.color});border:1px solid var(--muted);vertical-align:middle"></span> צבע</button></div>
+  ${ui.colorPick?`<div class="colors">${COLORS.map(c=>`<button type="button" class="swatch" style="background:var(${c})" data-act="setColor" data-v="${c}" aria-pressed="${c===d.color}" aria-label="צבע"></button>`).join('')}</div>`:''}
+  ${renderNotes(d.id,`<p>${drawerBubble(d,open.slice())}</p>`)}
+  ${open.length?`<ul class="list">${open.map(i=>itemRow(i,d)).join('')}</ul>`:`<div class="empty">אין כאן כלום כרגע ✨</div>`}
+  ${again.length?`<div class="section-label"><span>קונה שוב? לחיצה מוסיפה לרשימה</span></div><div class="again">${again.map(t=>`<button type="button" data-act="again" data-text="${esc(t)}">+ ${esc(t)}</button>`).join('')}</div>`:''}
+  ${done.length?`<div class="section-label"><span>עשיתי ✓</span><button type="button" class="linkbtn" data-act="archive">להעביר לארכיון</button></div><ul class="list">${done.map(i=>itemRow(i,d)).join('')}</ul>`:''}
+  ${arch.length?`<div class="section-label"><span>ארכיון של ${esc(d.name)}</span><button type="button" class="linkbtn" data-act="toggleArch">${ui.showArchive?'להסתיר':'להציג ('+arch.length+')'}</button></div>${ui.showArchive?`<ul class="list">${arch.map(i=>itemRow(i,d)).join('')}</ul>`:''}`:''}
+  ${d.custom?`<div class="section-label"><span></span>${ui.confirmDel?`<span class="row"><span>הפתקים בנושא יימחקו. בטוחה?</span><button type="button" class="danger solid" data-act="delDrawer">כן, למחוק</button><button type="button" class="linkbtn" data-act="cancelDel">לא</button></span>`:`<button type="button" class="danger" data-act="askDel">למחוק את הנושא</button>`}</div>`:''}`;
+}
+function renderFav(){
+  const fav=items.filter(i=>i.love&&isOpen(i));
+  return `
+  <div class="top"><button type="button" class="back" data-act="home">→ חזרה</button><span class="date-today">${fav.length} מועדפים</span></div>
+  <h1 style="margin:4px 0 0">המועדפים שלי 💗</h1>
+  <div class="bubble"><div class="face" aria-hidden="true">🐣</div><div><p>כאן מחכים כל הדברים שסימנת בלב ורוד, מכל הנושאים ביחד.</p></div></div>
+  ${fav.length?DRAWERS.filter(d=>fav.some(i=>i.drawer===d.id)).map(d=>`<div class="from">${d.emoji} ${esc(d.name)}</div><ul class="list">${fav.filter(i=>i.drawer===d.id).map(i=>itemRow(i,d)).join('')}</ul>`).join(''):'<div class="empty">עוד אין מועדפים. לחיצה על הלב ליד פתק מוסיפה אותו לכאן.</div>'}`;
+}
+function renderCapsule(){
+  const caps=items.filter(i=>i.drawer==='capsule'&&isOpen(i)).sort((a,b)=>new Date(a.target)-new Date(b.target));
+  const start=new Date(now().getFullYear(),now().getMonth(),1);
+  const months=[];for(let k=0;k<12;k++)months.push(new Date(start.getFullYear(),start.getMonth()+k,1));
+  const inMonth=(i,m)=>{const t=new Date(i.target);return t.getFullYear()===m.getFullYear()&&t.getMonth()===m.getMonth()};
+  return `
+  <div class="top"><button type="button" class="back" data-act="home">→ חזרה</button><span class="date-today">${caps.length} מכתבים שמורים</span></div>
+  <h1 style="margin:4px 0 0">💌 קפסולת זמן</h1>
+  ${renderNotes('capsule','<p>כאן שמורים דברים לעתיד הרחוק. הם לא יופיעו לך בבית עד חודש לפני המועד שלהם, ואז אני פותחת את המכתב ושולחת לך התראה.</p>')}
+  <div class="months">${months.map(m=>{const c=caps.filter(i=>inMonth(i,m));return `<button type="button" class="month ${c.length?'has':''}" data-act="month" data-key="${m.getFullYear()}-${m.getMonth()}"><div>${m.toLocaleDateString('he-IL',{month:'short'})}</div><div class="yr">${m.getFullYear()}</div><div class="dots">${c.map(()=>'<i></i>').join('')}</div></button>`}).join('')}</div>
+  <div class="section-label"><span>לפי התאריך המיועד</span></div>
+  ${caps.length?'':'<div class="empty">הקפסולה ריקה. לחיצה על ＋ ובחירה ב״קפסולת זמן״ שומרת מכתב לעתיד.</div>'}
+  <ul class="list">${caps.map(i=>{
+    const vis=capsuleVisible(i)||ui.peek[i.id];const n=diffDays(i.target);const t=new Date(i.target);
+    return `<li class="envelope" data-id="${i.id}" id="m-${t.getFullYear()}-${t.getMonth()}" ${ui.highlight===t.getFullYear()+'-'+t.getMonth()?'style="outline:3px solid var(--accent)"':''}>
+      <span class="seal" aria-hidden="true">${capsuleVisible(i)?'📬':'💌'}</span>
+      <button type="button" class="body" data-act="editItem" data-id="${i.id}"><div class="text ${vis?'':'hidden-text'}">${esc(i.text)}</div>
+      <div class="when">ליום ${fDate(i.target)} · ${n>60?'בעוד כ־'+Math.round(n/30)+' חודשים':inDays(n)}</div>
+      <div class="when">נכתב ${fDT(i.created)}${capsuleVisible(i)?' · נפתח, מופיע בבית':' · ייפתח ב־'+fDate(addDays(i.target,-30))}</div></button>
+      ${capsuleVisible(i)?`<button type="button" class="check" data-act="check" data-id="${i.id}" aria-label="סימון שעשיתי"><svg viewBox="0 0 16 16"><path d="M3 8.5l3.2 3L13 4.5"/></svg></button>`:`<button type="button" class="linkbtn" data-act="peek" data-id="${i.id}">${ui.peek[i.id]?'לסגור':'הצצה'}</button>`}
+    </li>`}).join('')}</ul>`;
+}
+
+/* ---------- settings ---------- */
+const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const pushSupported=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+function pushStatus(){
+  if(!CFG.pushUrl||!CFG.vapidPublic)return {cls:'',text:'שרת ההתראות עוד לא מחובר. זה השלב האחרון בהתקנה.'};
+  if(/iPhone|iPad/.test(navigator.userAgent)&&!standalone())return {cls:'',text:'כדי לקבל התראות באייפון צריך קודם להוסיף את פתקית למסך הבית: בספארי, כפתור השיתוף ⬆️ ואז ״הוספה למסך הבית״. אחר כך לפתוח משם.'};
+  if(!pushSupported())return {cls:'',text:'הדפדפן הזה לא תומך בהתראות.'};
+  if(Notification.permission==='denied')return {cls:'',text:'ההתראות חסומות. אפשר להפעיל אותן בהגדרות האייפון ← התראות ← פתקית.'};
+  if(push.subscription&&Notification.permission==='granted')return {cls:'good',text:`ההתראות פועלות 💗${push.lastSync?' · עודכן '+fDT(push.lastSync):''}${push.lastError?' · '+push.lastError:''}`};
+  return {cls:'',text:'ההתראות עוד לא הופעלו.'};
+}
+function seg(act,val,opts){return `<div class="seg">${opts.map(([v,l,st])=>`<button type="button" data-act="${act}" data-v="${v}" aria-pressed="${v===val}" ${st?`style="${st}"`:''}>${l}</button>`).join('')}</div>`}
+function renderSettings(){
+  const st=pushStatus();
+  const on=push.subscription&&typeof Notification!=='undefined'&&Notification.permission==='granted';
+  return `
+  <div class="top"><h1>⚙️ הגדרות</h1></div>
+  <section class="panel"><h2>🔔 התראות</h2>
+    <div class="status ${st.cls}">${st.text}</div>
+    ${CFG.pushUrl?`<div class="row">${on?`<button type="button" class="ghost-btn" data-act="testPush">לשלוח התראת ניסיון</button><button type="button" class="ghost-btn" data-act="syncNow">לעדכן עכשיו</button>`:`<button type="button" class="save" data-act="enablePush">להפעיל התראות</button>`}</div>`:''}
+    <label class="field"><span>באיזו שעה לשלוח תזכורות לביטולים ולקפסולה?</span><input type="time" id="f-remindTime" value="${settings.remindTime}"></label>
+    <p class="hint">תרופות ותרגילים מגיעים בשעות שקבעת לכל אחד.</p>
+    ${ui.msg?`<p class="hint">${esc(ui.msg)}</p>`:''}
+  </section>
+  <section class="panel"><h2>🎨 מראה</h2>
+    <div class="field"><span>סגנון</span>${seg('look',settings.look,[['notebook','מחברת'],['pastel','ענן פסטל'],['stickers','מדבקות']])}</div>
+    ${settings.look==='notebook'?`<div class="field"><span>סוג הדף</span>${seg('pattern',settings.paper.pattern,[['lines','שורות'],['grid','משבצות'],['dots','נקודות'],['blank','ריק']])}</div>
+    <div class="field"><span>צבע הדף</span>${seg('tone',settings.paper.tone,[['white','לבן'],['cream','שמנת'],['yellow','צהוב בהיר']])}</div>`:''}
+    <div class="field"><span>כתב</span>${seg('hand',settings.hand,[['print','דפוס'],['round','כתב יד עגול',"font-family:'Playpen Sans Hebrew',cursive"],['narrow','כתב יד צר',"font-family:'Amatic SC',cursive;font-size:17px;font-weight:700"]])}</div>
+  </section>
+  <section class="panel"><h2>💾 גיבוי</h2>
+    <p class="hint">הכול נשמר רק בטלפון הזה. כדאי לשמור גיבוי מדי פעם, למשל בקבצים או ב־iCloud Drive.</p>
+    <div class="row"><button type="button" class="ghost-btn" data-act="export">לשמור גיבוי</button><label class="ghost-btn" style="cursor:pointer">לשחזר מגיבוי<input type="file" id="importFile" accept="application/json,.json" hidden></label></div>
+    ${ui.confirmImport?`<div class="row"><span>הגיבוי יחליף את כל מה שיש עכשיו. להמשיך?</span><button type="button" class="danger solid" data-act="doImport">כן, לשחזר</button><button type="button" class="linkbtn" data-act="cancelImport">לא</button></div>`:''}
+  </section>`;
+}
+
+/* ---------- notifications schedule ---------- */
+function buildSchedule(){
+  const out=[];const N=Date.now();const H=settings.remindTime||'10:00';
+  const at=(date,hm)=>{const [h,m]=hm.split(':');const d=new Date(date);d.setHours(+h,+m,0,0);return d.getTime()};
+  const add=(t,title,body,id,tag)=>{if(t>N)out.push({at:t,title,body,url:'./?item='+id,tag})};
+  for(const i of items){
+    if(!isOpen(i))continue;const d=D(i.drawer);if(!d)continue;const title=d.emoji+' '+d.name;
+    if(d.type==='deadline'&&i.deadline){
+      const dl=new Date(i.deadline),rem=remindOn(i);
+      if(i.early)add(at(addDays(dl,-30),H),title,`בעוד חודש, עד ${fShort(dl)}: ${i.text}. יש זמן להתכונן 🌿`,i.id,'e'+i.id);
+      add(at(rem,H),title,`היי 💗 ${i.before===0?'היום':'בעוד '+daysWord(i.before)} (עד ${fShort(dl)}): ${i.text}`,i.id,'r'+i.id);
+      const last=diffDays(dl);
+      if(i.nag){for(let k=1;;k++){const day=addDays(rem,k);const dd=Math.round((day-sod(dl))/DAY);if(dd>3||k>45)break;
+        add(at(day,H),title,dd<0?`רק מזכירה שוב: ${i.text} (עד ${fShort(dl)})`:dd===0?`היום היום האחרון: ${i.text} 💗`:`עוד לא סימנת: ${i.text}. אם כבר טיפלת, אפשר לסמן ✓`,i.id,'n'+i.id)}}
+      else if(sod(rem)<sod(dl))add(at(dl,H),title,`היום היום האחרון: ${i.text} 💗`,i.id,'d'+i.id);
+    }
+    if(d.type==='routine'){
+      for(let k=0;k<21;k++){const day=addDays(now(),k);if(k===0&&isRoutineDone(i))continue;
+        for(const t of i.times||[])add(at(day,t),title,`הגיע הזמן: ${i.text} 💗`,i.id,'t'+i.id)}
+    }
+    if(d.type==='capsule'&&i.target){
+      add(at(addDays(i.target,-30),H),'💌 נפתח מכתב מקפסולת הזמן',`ל־${fDate(i.target)}: ${i.text}`,i.id,'c'+i.id);
+      add(at(i.target,H),'💌 היום זה היום',i.text,i.id,'C'+i.id);
+    }
+  }
+  return out.sort((a,b)=>a.at-b.at).slice(0,700);
+}
+let syncTimer=null;
+function scheduleSync(){clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,1500)}
+async function syncNow(){
+  if(!CFG.pushUrl||!push.subscription)return;
+  try{
+    const r=await fetch(CFG.pushUrl.replace(/\/$/,'')+'/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({device:push.device,subscription:push.subscription,schedule:buildSchedule()})});
+    if(!r.ok)throw new Error('שגיאה '+r.status);
+    push.lastSync=iso(now());push.lastError=null;
+  }catch(e){push.lastError='לא הצלחתי לעדכן את השרת. אנסה שוב בפעם הבאה שתפתחי.'}
+  persist();if(ui.view==='settings')render();
+}
+const b64ToBytes=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
+async function enablePush(){
+  ui.msg=null;
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted'){ui.msg='לא אישרת התראות. אפשר לנסות שוב מתי שתרצי.';render();return}
+    const reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToBytes(CFG.vapidPublic)});
+    push.subscription=sub.toJSON();persist();
+    await syncNow();ui.msg='מעולה! מעכשיו התזכורות יגיעו לטלפון 💗';
+  }catch(e){ui.msg='משהו לא הסתדר בהפעלה: '+e.message}
+  render();
+}
+async function testPush(){
+  try{
+    await syncNow();
+    const r=await fetch(CFG.pushUrl.replace(/\/$/,'')+'/test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({device:push.device})});
+    const j=await r.json();ui.msg=j.ok?'נשלחה התראת ניסיון. היא אמורה להגיע תוך כמה שניות.':'השליחה לא הצליחה ('+(j.status||j.error)+'). אולי צריך להפעיל התראות מחדש.';
+    if(!j.ok&&(j.status===404||j.status===410)){push.subscription=null;persist()}
+  }catch(e){ui.msg='לא הצלחתי להגיע לשרת.'}
+  render();
+}
+async function exportBackup(){
+  const data=JSON.stringify({app:'pitkit',version:1,exported:iso(now()),items,notes,custom,drawerColors,settings},null,1);
+  const name='pitkit-'+dInput(now())+'.json';
+  const file=new File([data],name,{type:'application/json'});
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'גיבוי פתקית'});return}}catch(e){if(e.name==='AbortError')return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();
+}
+
+/* ---------- add / edit sheet ---------- */
+function renderSheet(){
+  const el=document.getElementById('sheet');
+  if(!ui.sheet){el.innerHTML='';return}
+  if(ui.sheet.kind==='drawer'){
+    const s=ui.sheet;
+    el.innerHTML=`<div class="scrim" data-act="close"></div>
+    <div class="sheet" role="dialog" aria-label="נושא חדש"><div class="sheet-in">
+      <h2>נושא חדש ${s.emoji}</h2>
+      <label class="field"><span>איך קוראים לו?</span><input type="text" id="f-dname" value="${esc(s.name)}" placeholder="למשל: מתנות, ספרים, לבית" autocomplete="off"></label>
+      <div class="field"><span>סמל</span><div class="row">${EMOJIS.map(x=>`<button type="button" class="emo-pick" data-act="pickEmoji" data-v="${x}" aria-pressed="${x===s.emoji}">${x}</button>`).join('')}</div></div>
+      <div class="field"><span>צבע</span><div class="row">${COLORS.map(c=>`<button type="button" class="swatch" style="background:var(${c})" data-act="pickColor" data-v="${c}" aria-pressed="${c===s.color}" aria-label="צבע"></button>`).join('')}</div></div>
+      <div class="field"><span>מה יהיה בו?</span><div class="row">${TYPES.map(x=>`<button type="button" class="pick" data-act="pickType" data-v="${x.t}" aria-pressed="${x.t===s.type}">${x.l}</button>`).join('')}</div></div>
+      <button type="button" class="save" data-act="saveDrawer">ליצור נושא 💗</button>
+    </div></div>`;
+    if(!s.focused){s.focused=true;setTimeout(()=>document.getElementById('f-dname')?.focus(),50)}
+    return;
+  }
+  const s=ui.sheet, d=D(s.drawer);
+  let extra='';
+  if(d.type==='deadline') extra=`
+    <label class="field"><span>עד מתי?</span><input type="date" id="f-deadline" value="${s.deadline}"></label>
+    <label class="field"><span>להזכיר לי</span><select id="f-before">${[0,1,2,3,5,7,14].map(n=>`<option value="${n}" ${+s.before===n?'selected':''}>${n===0?'ביום עצמו':daysWord(n)+' לפני'}</option>`).join('')}</select></label>
+    <label class="toggle"><input type="checkbox" id="f-early" ${s.early?'checked':''}> גם תזכורת מוקדמת, חודש לפני, כדי להתכונן</label>
+    <label class="toggle"><input type="checkbox" id="f-nag" ${s.nag?'checked':''}> להזכיר שוב כל יום עד שאסמן שטיפלתי</label>`;
+  if(d.type==='routine') extra=`
+    <div class="field"><span>באיזו שעה? (אפשר שתיים)</span><div class="row"><input type="time" id="f-t1" value="${s.t1}" style="max-width:140px"><input type="time" id="f-t2" value="${s.t2}" style="max-width:140px" aria-label="שעה נוספת (לא חובה)"></div></div>
+    <label class="toggle"><input type="checkbox" id="f-track" ${s.track?'checked':''}> להראות לי כמה ימים ברצף (לא חובה)</label>`;
+  if(d.type==='capsule') extra=`
+    <label class="field"><span>לאיזה יום בעתיד?</span><input type="date" id="f-target" value="${s.target}"></label>
+    <p class="hint">המכתב יחכה בקפסולה ויופיע לך חודש לפני.</p>`;
+  const editing=s.editId!=null;
+  el.innerHTML=`<div class="scrim" data-act="close"></div>
+  <div class="sheet" role="dialog" aria-label="${editing?'עריכת פתק':'פתק חדש'}"><div class="sheet-in">
+    <h2>${editing?'לערוך ✏️':'מה לזכור? ✍️'}</h2>
+    <label class="field"><span>כתבי חופשי</span><input type="text" id="f-text" value="${esc(s.text)}" placeholder="${d.type==='list'?'למשל: קרם ידיים':d.type==='deadline'?'למשל: לבטל תור לשיניים':d.type==='routine'?'למשל: טיפות לעיניים':'למשל: לחדש רישיון'}" autocomplete="off"></label>
+    <div class="field"><span>לאיזה נושא?</span><div class="row">${DRAWERS.map(x=>`<button type="button" class="pick" data-act="sheetDrawer" data-id="${x.id}" aria-pressed="${x.id===s.drawer}">${x.emoji} ${esc(x.name)}</button>`).join('')}</div></div>
+    ${extra}
+    <p class="hint">${editing?'נוצר '+fDT(items.find(i=>i.id===s.editId).created):'התאריך והשעה של עכשיו יישמרו על הפתק אוטומטית.'}</p>
+    <button type="button" class="save" data-act="saveItem">לשמור 💛</button>
+    ${editing?(s.confirmDelete?`<div class="row"><span>למחוק את הפתק לגמרי?</span><button type="button" class="danger solid" data-act="deleteItem">כן, למחוק</button><button type="button" class="linkbtn" data-act="keepItem">לא</button></div>`:`<button type="button" class="danger" data-act="askDeleteItem">מחיקה</button>`):''}
+  </div></div>`;
+  if(!s.focused){s.focused=true;if(!editing)setTimeout(()=>document.getElementById('f-text')?.focus(),50)}
+}
+function readSheet(){
+  const s=ui.sheet;if(!s)return;
+  const v=id=>document.getElementById(id);
+  if(v('f-dname'))s.name=v('f-dname').value;
+  if(v('f-text'))s.text=v('f-text').value;
+  if(v('f-deadline'))s.deadline=v('f-deadline').value;
+  if(v('f-before'))s.before=v('f-before').value;
+  if(v('f-early'))s.early=v('f-early').checked;
+  if(v('f-nag'))s.nag=v('f-nag').checked;
+  if(v('f-t1'))s.t1=v('f-t1').value;
+  if(v('f-t2'))s.t2=v('f-t2').value;
+  if(v('f-track'))s.track=v('f-track').checked;
+  if(v('f-target'))s.target=v('f-target').value;
+}
+function openSheet(item){
+  if(item){
+    ui.sheet={editId:item.id,drawer:item.drawer,text:item.text,deadline:dInput(item.deadline||addDays(now(),14)),before:item.before??2,early:!!item.early,nag:item.nag??true,
+      t1:(item.times||[])[0]||'09:00',t2:(item.times||[])[1]||'',track:!!item.track,target:dInput(item.target||addDays(now(),365))};
+  }else{
+    const dr=ui.view==='drawer'?ui.drawer:ui.view==='capsule'?'capsule':'pharm';
+    ui.sheet={drawer:dr,text:'',deadline:dInput(addDays(now(),14)),before:2,early:false,nag:true,t1:'09:00',t2:'',track:false,target:dInput(addDays(now(),365))};
+  }
+  renderSheet();
+}
+function saveItem(){
+  readSheet();const s=ui.sheet,d=D(s.drawer);
+  if(!s.text.trim()){const t=document.getElementById('f-text');t.focus();t.placeholder='צריך לכתוב משהו קטן 🙂';return}
+  if(d.type==='deadline'&&!s.deadline){document.getElementById('f-deadline').focus();return}
+  if(d.type==='capsule'&&!s.target){document.getElementById('f-target').focus();return}
+  if(d.type==='routine'&&!s.t1&&!s.t2){document.getElementById('f-t1').focus();return}
+  let o=s.editId!=null?items.find(i=>i.id===s.editId):null;
+  if(!o){o={id:nextId(items),created:iso(now()),done:false,archived:false,love:false};items.push(o)}
+  o.drawer=d.id;o.text=s.text.trim();
+  ['deadline','before','early','nag','times','track','target'].forEach(k=>{if(!(d.type==='routine'&&k==='track'))delete o[k]});
+  if(d.type==='deadline')Object.assign(o,{deadline:atNoon(s.deadline),before:+s.before,early:s.early,nag:s.nag});
+  if(d.type==='routine')Object.assign(o,{times:[s.t1,s.t2].filter(Boolean).sort(),track:s.track,streak:o.streak||0});
+  if(d.type==='capsule')Object.assign(o,{target:atNoon(s.target)});
+  ui.sheet=null;ui.view=d.type==='capsule'?'capsule':'drawer';ui.drawer=d.id;
+  save();render();renderSheet();
+}
+function saveDrawer(){
+  readSheet();const s=ui.sheet;
+  if(!s.name.trim()){const t=document.getElementById('f-dname');t.focus();t.placeholder='צריך שם קטן 🙂';return}
+  const id='d'+Date.now();
+  custom.push({id,name:s.name.trim(),emoji:s.emoji,color:s.color,type:s.type,custom:true});
+  syncDrawers();ui.sheet=null;ui.view='drawer';ui.drawer=id;ui.confirmDel=false;
+  save();render();renderSheet();scrollTo(0,0);
+}
+
+/* ---------- interactions ---------- */
+function sparkle(btn){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const r=btn.getBoundingClientRect();const set=['💗','✨','💕','🌸','💖'];
+  for(let k=0;k<9;k++){const s=document.createElement('span');s.className='spark';s.textContent=set[k%set.length];
+    const a=Math.random()*Math.PI*2,dist=40+Math.random()*40;
+    s.style.left=(r.left+r.width/2-8)+'px';s.style.top=(r.top+r.height/2-10)+'px';
+    s.style.setProperty('--dx',Math.cos(a)*dist+'px');s.style.setProperty('--dy',Math.sin(a)*dist-20+'px');
+    document.body.appendChild(s);setTimeout(()=>s.remove(),950)}
+  try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}
+}
+function check(id,btn){
+  const i=items.find(x=>x.id==id);const d=D(i.drawer);const row=btn.closest('.item,.envelope');
+  if(d.type==='routine'){
+    if(isRoutineDone(i)){i.doneDate=null;i.lastDone=i.prevLastDone||null;i.streak=i.prevStreak||0;save();render();return}
+    row.classList.add('popping');sparkle(btn);
+    setTimeout(()=>{const y=dayKey(addDays(now(),-1));i.prevLastDone=i.lastDone||null;i.prevStreak=i.streak||0;i.streak=(i.lastDone===y?(i.streak||0):0)+1;i.lastDone=todayKey();i.doneDate=todayKey();save();render()},600);return;
+  }
+  if(i.done){i.done=false;i.archived=false;i.doneAt=null;save();render();return}
+  row.classList.add('popping');sparkle(btn);
+  setTimeout(()=>{i.done=true;i.doneAt=iso(now());save();render()},650);
+}
+function liveDraft(){const ed=document.querySelector('.content[contenteditable="true"]');if(ed&&ui.editNote!=null)ui.draft=ed.innerHTML}
+function closeEditor(keep){
+  const n=notes.find(x=>x.id===ui.editNote);
+  if(n){if(keep){const ed=document.getElementById('ed-'+n.id);if(ed)n.html=sanitize(ed.innerHTML)}if(!n.html.replace(/<br>|&nbsp;|\s/g,''))notes=notes.filter(x=>x!==n)}
+  ui.editNote=null;ui.draft=null;persist();render();
+}
+let pendingImport=null;
+document.addEventListener('mousedown',e=>{if(e.target.closest('[data-act="bold"]'))e.preventDefault()});
+document.addEventListener('change',async e=>{
+  if(e.target.id==='linkpick'&&e.target.value){insertLink(e.target.value);e.target.value='';return}
+  if(e.target.id==='f-remindTime'){settings.remindTime=e.target.value||'10:00';save();return}
+  if(e.target.id==='importFile'&&e.target.files[0]){
+    try{const j=JSON.parse(await e.target.files[0].text());if(j.app!=='pitkit'||!Array.isArray(j.items))throw 0;pendingImport=j;ui.confirmImport=true;ui.msg=null}
+    catch(err){ui.msg='הקובץ הזה לא נראה כמו גיבוי של פתקית.'}
+    render();return;
+  }
+  if(ui.sheet&&e.target.closest('.sheet'))readSheet();
+});
+document.addEventListener('input',e=>{if(ui.sheet&&e.target.closest('.sheet'))readSheet()});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&ui.sheet){ui.sheet=null;renderSheet()}
+  if(e.key==='Enter'&&e.target.id==='f-text'){e.preventDefault();saveItem()}
+  if(e.key==='Enter'&&e.target.id==='f-dname'){e.preventDefault();saveDrawer()}
+});
+document.addEventListener('click',e=>{
+  const lk=e.target.closest('.ilink');
+  if(lk&&!lk.closest('[contenteditable="true"]')){e.preventDefault();goItem(lk.dataset.item);return}
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const a=b.dataset.act;
+  if(a==='look'){settings.look=b.dataset.v;persist();applyLook();render();return}
+  if(a==='hand'){settings.hand=b.dataset.v;persist();applyLook();render();return}
+  if(a==='pattern'){settings.paper.pattern=b.dataset.v;persist();applyLook();render();return}
+  if(a==='tone'){settings.paper.tone=b.dataset.v;persist();applyLook();render();return}
+  if(a==='enablePush'){enablePush();return}
+  if(a==='testPush'){testPush();return}
+  if(a==='syncNow'){syncNow().then(()=>{ui.msg=push.lastError||'עודכן 💗';render()});return}
+  if(a==='export'){exportBackup();return}
+  if(a==='doImport'&&pendingImport){const j=pendingImport;items=j.items;notes=j.notes||[];custom=j.custom||[];drawerColors=j.drawerColors||{};settings=Object.assign({},DEFAULTS,j.settings||{});syncDrawers();pendingImport=null;ui.confirmImport=null;ui.msg='הגיבוי שוחזר 💗';save();applyLook();render();return}
+  if(a==='cancelImport'){pendingImport=null;ui.confirmImport=null;render();return}
+  if(a==='colorPick'){ui.colorPick=!ui.colorPick;render();return}
+  if(a==='setColor'){drawerColors[ui.drawer]=b.dataset.v;syncDrawers();persist();render();return}
+  if(a==='addNote'){if(ui.editNote!=null)closeEditor(true);const id=nextId(notes);notes.push({id,scope:b.dataset.scope,html:'',created:iso(now())});ui.editNote=id;ui.draft=null;render();focusEditor(id);return}
+  if(a==='editNote'){if(ui.editNote!=null)closeEditor(true);ui.editNote=+b.dataset.id;ui.draft=null;ui.confirmNote=null;render();focusEditor(ui.editNote);return}
+  if(a==='bold'){const ed=document.querySelector('.content[contenteditable="true"]');if(ed){restoreRange(ed);document.execCommand('bold')}return}
+  if(a==='saveNote'){closeEditor(true);return}
+  if(a==='cancelNote'){closeEditor(false);return}
+  if(a==='moveNote'){const n=notes.find(x=>x.id==b.dataset.id);const list=notes.filter(x=>x.scope===n.scope);const k=list.indexOf(n),j=k+(+b.dataset.dir);if(j<0||j>=list.length)return;const ia=notes.indexOf(n),ib=notes.indexOf(list[j]);[notes[ia],notes[ib]]=[notes[ib],notes[ia]];persist();render();document.querySelector(`[data-note="${n.id}"]`)?.scrollIntoView({inline:'center',block:'nearest'});return}
+  if(a==='askDelNote'){ui.confirmNote=+b.dataset.id;render();return}
+  if(a==='keepNote'){ui.confirmNote=null;render();return}
+  if(a==='delNote'){notes=notes.filter(x=>x.id!=b.dataset.id);ui.confirmNote=null;persist();render();return}
+  if(a==='home'){ui.view='home';render();scrollTo(0,0);return}
+  if(a==='nav'){ui.view=b.dataset.view;ui.msg=null;render();scrollTo(0,0);return}
+  if(a==='drawer'){const id=b.dataset.id;if(id==='capsule'){ui.view='capsule'}else{ui.view='drawer';ui.drawer=id;ui.showArchive=false;ui.confirmDel=false;ui.colorPick=false}render();scrollTo(0,0);return}
+  if(a==='check'){check(b.dataset.id,b);return}
+  if(a==='love'){const i=items.find(x=>x.id==b.dataset.id);i.love=!i.love;persist();render();return}
+  if(a==='editItem'){openSheet(items.find(x=>x.id==b.dataset.id));return}
+  if(a==='askDeleteItem'){ui.sheet.confirmDelete=true;readSheet();renderSheet();return}
+  if(a==='keepItem'){ui.sheet.confirmDelete=false;renderSheet();return}
+  if(a==='deleteItem'){items=items.filter(i=>i.id!==ui.sheet.editId);ui.sheet=null;save();render();renderSheet();return}
+  if(a==='again'){items.push({id:nextId(items),drawer:ui.drawer,text:b.dataset.text,created:iso(now()),done:false,archived:false,love:false});save();render();return}
+  if(a==='archive'){items.forEach(i=>{if(i.drawer===ui.drawer&&i.done)i.archived=true});persist();render();return}
+  if(a==='toggleArch'){ui.showArchive=!ui.showArchive;render();return}
+  if(a==='peek'){ui.peek[b.dataset.id]=!ui.peek[b.dataset.id];render();return}
+  if(a==='month'){ui.highlight=b.dataset.key;render();document.getElementById('m-'+b.dataset.key)?.scrollIntoView({behavior:'smooth',block:'center'});return}
+  if(a==='add'){openSheet();return}
+  if(a==='close'){ui.sheet=null;renderSheet();return}
+  if(a==='sheetDrawer'){readSheet();ui.sheet.drawer=b.dataset.id;renderSheet();return}
+  if(a==='saveItem'){saveItem();return}
+  if(a==='newDrawer'){ui.sheet={kind:'drawer',name:'',emoji:'🎁',color:'--c1',type:'list'};renderSheet();return}
+  if(a==='pickEmoji'||a==='pickColor'||a==='pickType'){readSheet();ui.sheet[{pickEmoji:'emoji',pickColor:'color',pickType:'type'}[a]]=b.dataset.v;renderSheet();return}
+  if(a==='saveDrawer'){saveDrawer();return}
+  if(a==='askDel'){ui.confirmDel=true;render();return}
+  if(a==='cancelDel'){ui.confirmDel=false;render();return}
+  if(a==='delDrawer'){const id=ui.drawer;custom=custom.filter(c=>c.id!==id);items=items.filter(i=>i.drawer!==id);notes=notes.filter(n=>n.scope!==id);delete drawerColors[id];syncDrawers();ui.confirmDel=false;ui.view='home';save();render();scrollTo(0,0);return}
+});
+
+function applyLook(){
+  const b=document.body;
+  b.dataset.look=settings.look;b.dataset.hand=settings.hand;b.dataset.pattern=settings.paper.pattern;b.dataset.tone=settings.paper.tone;
+  const bar=getComputedStyle(b).getPropertyValue('--bar').trim()||'#fbf6e8';
+  document.querySelector('meta[name="theme-color"]').setAttribute('content',bar);
+}
+function render(){
+  liveDraft();
+  const v=ui.view;
+  document.getElementById('screen').innerHTML=v==='drawer'?renderDrawer():v==='capsule'?renderCapsule():v==='fav'?renderFav():v==='settings'?renderSettings():renderHome();
+  const cur=v==='drawer'||v==='fav'?'home':v;
+  document.getElementById('nav').innerHTML=`
+    <button type="button" data-act="nav" data-view="home" ${cur==='home'?'aria-current="page"':''}>🏠 נושאים</button>
+    <button type="button" data-act="nav" data-view="capsule" ${cur==='capsule'?'aria-current="page"':''}>💌 קפסולה</button>
+    <button type="button" class="add" data-act="add" aria-label="פתק חדש">+</button>
+    <button type="button" data-act="nav" data-view="settings" ${cur==='settings'?'aria-current="page"':''}>⚙️ הגדרות</button>`;
+}
+function openFromUrl(u){
+  try{const id=new URL(u,location.href).searchParams.get('item');if(id){history.replaceState(null,'',location.pathname);setTimeout(()=>goItem(+id),50)}}catch(e){}
+}
+
+window.__pitkit={buildSchedule}; // for debugging from the console
+applyLook();render();
+openFromUrl(location.href);
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+  navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.type==='open')openFromUrl(e.data.url)});
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(!ui.sheet&&ui.editNote==null)render();scheduleSync()}});
+scheduleSync();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+name = "pitkit-push"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+
+[triggers]
+crons = ["* * * * *"]
+
+# Created on first deploy with: npx wrangler kv namespace create PITKIT
+[[kv_namespaces]]
+binding = "PITKIT"
+id = "REPLACE_WITH_KV_ID"
+
+[vars]
+VAPID_PUBLIC = "BOKAza5dLZjEyCWo6ow-TvhSlN0t54k3AwNmJDI8TtM9fl-0xwW2dvWTvgI_8pkJnEZsOObUKwjazKSL9JC2kEQ"
+VAPID_SUBJECT = "https://lorenkr.github.io/nemo/"
+ALLOWED_ORIGINS = "https://lorenkr.github.io,http://localhost:8787,http://localhost:5173"
+# VAPID_PRIVATE is a secret: npx wrangler secret put VAPID_PRIVATE
