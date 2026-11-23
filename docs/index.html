@@ -183,6 +183,10 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;stro
 .field>span{font-size:13px;color:var(--muted)}
 .field input[type=text],.field input[type=date],.field input[type=time],.field select{font:inherit;font-size:16px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--paper);color:var(--ink);width:100%;min-height:46px}
 .field input[type=text]{font-family:var(--f-hand)}
+/* iOS Safari gives date/time inputs a fixed intrinsic width that overflows; let them shrink */
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;box-sizing:border-box;text-align:right}
+input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and-time-value{text-align:right;margin:0}
+.row input[type=date],.row input[type=time]{flex:1 1 120px;width:auto}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .pick{border:1.5px solid var(--line);background:transparent;border-radius:99px;padding:6px 12px;font-size:14px;display:inline-flex;align-items:center;gap:6px}
 .pick[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
@@ -331,7 +335,7 @@ function renderPinned(scope,assistantHTML){
   if(!cards.length)return `<div class="dots">${addBtn}</div>`;
   const c=cards[idx];
   let body,foot;
-  if(c.assistant){body=`<div class="content">${c.html}</div>`;foot=`<span>מהעוזרת 💗</span>`}
+  if(c.assistant){body=`<div class="content">${c.html}</div>`;foot=''}
   else if(ui.editNote===c.id){
     body=`<div class="content" id="ed-${c.id}" contenteditable="true" dir="rtl">${ui.draft!=null?ui.draft:c.html}</div>`;
     foot=`<div class="note-tools"><button type="button" data-act="bold" aria-label="מודגש"><b>B</b></button>
@@ -807,7 +811,7 @@ document.addEventListener('click',e=>{
   case 'toggleArch':ui.showArchive=!ui.showArchive;render();return;
   case 'peek':ui.peek[b.dataset.id]=!ui.peek[b.dataset.id];render();return;
   case 'month':ui.highlight=b.dataset.key;render();document.getElementById('m-'+b.dataset.key)?.scrollIntoView({behavior:'smooth',block:'center'});return;
-  case 'add':ui.sheet={kind:'choose'};renderSheet();return;
+  case 'add':if(ui.view==='drawer'||ui.view==='capsule'){openItemSheet();return}ui.sheet={kind:'choose'};renderSheet();return;
   case 'chooseItem':openItemSheet();return;
   case 'chooseList':ui.sheet={kind:'list',name:'',icon:'gift',color:'--l1',type:'list'};renderSheet();return;
   case 'chooseNote':{ui.sheet=null;renderSheet();const scope=ui.view==='drawer'?ui.drawer:ui.view==='capsule'?'capsule':'home';if(ui.view!=='drawer'&&ui.view!=='capsule')ui.view='home';addNote(scope);scrollTo(0,0);return}
