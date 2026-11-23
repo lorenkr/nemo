@@ -1,40 +1,31 @@
-"""Draws Pitkit's home-screen icons into docs/. Run: python3 tools/make-icons.py"""
-from PIL import Image, ImageDraw, ImageFont
-import os, math
+"""Draws Pitkit's home-screen icon (pink folder with a list) into docs/. Run: python3 tools/make-icons.py"""
+from PIL import Image, ImageDraw
+import os
 
 OUT = os.path.join(os.path.dirname(__file__), "..", "docs")
-S = 1024
+S, k = 1024, 4                       # final size, supersampling
+BG, BACK, FRONT, WHITE = "#fefefe", "#d77e9e", "#f5abc4", "#ffffff"
 
-img = Image.new("RGB", (S, S), "#fbf6e8")
-d = ImageDraw.Draw(img)
-# lined paper + red margin
-for y in range(140, S, 92):
-    d.line([(0, y), (S, y)], fill="#d3dff1", width=6)
-d.line([(S - 150, 0), (S - 150, S)], fill="#f1a7a3", width=8)
+im = Image.new("RGB", (S * k, S * k), BG)
+d = ImageDraw.Draw(im)
+R = lambda x0, y0, x1, y1, r, c: d.rounded_rectangle([x0 * k, y0 * k, x1 * k, y1 * k], r * k, fill=c)
+E = lambda x0, y0, x1, y1, c: d.ellipse([x0 * k, y0 * k, x1 * k, y1 * k], fill=c)
+P = lambda pts, c: d.polygon([(x * k, y * k) for x, y in pts], fill=c)
 
-# tilted yellow sticky note
-note = Image.new("RGBA", (600, 600), (0, 0, 0, 0))
-nd = ImageDraw.Draw(note)
-nd.rectangle([20, 34, 580, 594], fill=(0, 0, 0, 30))  # soft shadow
-nd.rectangle([0, 0, 560, 560], fill="#fff1a6")
-nd.rectangle([0, 0, 560, 70], fill="#ffe873")
-for i, y in enumerate((180, 270, 360)):
-    nd.line([(70, y), (490 - i * 90, y)], fill="#2c3a63", width=16)
-note = note.rotate(-6, resample=Image.BICUBIC, expand=True)
-img.paste(note, ((S - note.width) // 2 - 20, (S - note.height) // 2 + 10), note)
+L, Rt, T, B = 132, 892, 230, 800     # folder bounds
+# back panel with the tab on the left and a slanted edge
+R(L, T, L + 270, T + 160, 40, BACK)
+P([(L + 230, T), (L + 270, T), (L + 330, T + 52), (L + 230, T + 52)], BACK)
+R(L, T + 52, Rt, T + 200, 46, BACK)
+# front panel
+R(L, T + 110, Rt, B, 54, FRONT)
+# list: dots and lines
+for y in (T + 270, T + 370, T + 470):
+    E(L + 92, y - 33, L + 158, y + 33, WHITE)
+    R(L + 205, y - 22, L + 600, y + 22, 22, WHITE)
 
-# pink heart
-def heart(cx, cy, r):
-    pts = []
-    for k in range(200):
-        t = 2 * math.pi * k / 200
-        x = 16 * math.sin(t) ** 3
-        y = 13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t)
-        pts.append((cx + x * r, cy - y * r))
-    return pts
-d.polygon(heart(700, 690, 11.5), fill="#ffffff")
-d.polygon(heart(700, 690, 10), fill="#ee5c9c")
-
-for size, name in ((512, "icon-512.png"), (192, "icon-192.png"), (180, "icon-180.png")):
-    img.resize((size, size), Image.LANCZOS).save(os.path.join(OUT, name))
+im = im.resize((S, S), Image.LANCZOS)
+im.save(os.path.join(os.path.dirname(__file__), "icon-source.png"))
+for size in (512, 192, 180):
+    im.resize((size, size), Image.LANCZOS).save(os.path.join(OUT, f"icon-{size}.png"))
 print("icons written")
