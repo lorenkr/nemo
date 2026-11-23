@@ -26,6 +26,10 @@ for y in (T + 270, T + 370, T + 470):
 
 im = im.resize((S, S), Image.LANCZOS)
 im.save(os.path.join(os.path.dirname(__file__), "icon-source.png"))
-for size in (512, 192, 180):
-    im.resize((size, size), Image.LANCZOS).save(os.path.join(OUT, f"icon-{size}.png"))
+# versioned names so phones never reuse a cached older icon
+VER = "v2"
+for old in [f for f in os.listdir(OUT) if f.startswith("icon-") and f.endswith(".png")]:
+    os.remove(os.path.join(OUT, old))
+for size in (1024, 512, 192, 180, 167, 152):
+    im.resize((size, size), Image.LANCZOS).save(os.path.join(OUT, f"icon-{VER}-{size}.png"), optimize=True)
 print("icons written")

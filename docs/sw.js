@@ -1,6 +1,6 @@
 // Pitkit service worker: offline shell + push notifications.
-const CACHE = 'pitkit-v4';
-const SHELL = ['./', './index.html', './config.js', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
+const CACHE = 'pitkit-v5';
+const SHELL = ['./', './index.html', './config.js', './manifest.webmanifest', './icon-v2-180.png', './icon-v2-192.png', './icon-v2-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -36,8 +36,8 @@ self.addEventListener('push', e => {
   e.waitUntil(self.registration.showNotification(data.title || 'פתקית', {
     body: data.body || '',
     tag: data.tag || undefined,
-    icon: 'icon-192.png',
-    badge: 'icon-192.png',
+    icon: 'icon-v2-192.png',
+    badge: 'icon-v2-192.png',
     lang: 'he', dir: 'rtl',
     data: { url: data.url || './' },
   }));
