@@ -187,6 +187,8 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;stro
 .field>span{font-size:13px;color:var(--muted)}
 .field input[type=text],.field input[type=date],.field input[type=time],.field select{font:inherit;font-size:16px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--paper);color:var(--ink);width:100%;min-height:46px}
 .field input[type=text]{font-family:var(--f-hand)}
+.field textarea{font:inherit;font-size:16px;font-family:var(--f-hand);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--paper);color:var(--ink);width:100%;min-height:84px;resize:vertical;line-height:1.5}
+.it .mt .has-desc{color:var(--muted)}
 /* iOS Safari gives date/time inputs a fixed intrinsic width that overflows; let them shrink */
 input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;box-sizing:border-box;text-align:right}
 input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and-time-value{text-align:right;margin:0}
@@ -233,6 +235,7 @@ const dayKey=d=>{d=new Date(d);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d
 const todayKey=()=>dayKey(now());
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const inDays=n=>n===0?'היום':n===1?'מחר':n===2?'בעוד יומיים':n<0?'עבר המועד':'בעוד '+n+' ימים';
+const remWord=n=>n===1?'תזכורת אחת':n===2?'שתי תזכורות':n+' תזכורות';
 const daysWord=n=>n===1?'יום':n===2?'יומיים':n+' ימים';
 const iso=d=>new Date(d).toISOString();
 const dInput=d=>{d=new Date(d);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
@@ -401,7 +404,7 @@ function homeBubble(){
   const dl=items.filter(i=>D(i.drawer)?.type==='deadline'&&isOpen(i)).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline))[0];
   if(dl){const n=diffDays(dl.deadline);const r=remindOn(dl);lines.push(`רק מזכירה לך: <b>${esc(dl.text)}</b> עד ${fShort(dl.deadline)}, ${inDays(n)}.${diffDays(r)>0?` אזכיר לך שוב ב־${fShort(r)}.`:''}`)}
   const rem=items.filter(i=>D(i.drawer)?.type==='reminder'&&isOpen(i)&&i.date&&diffDays(remindAt(i))===0);
-  if(rem.length) lines.push(`היום: <b>${esc(rem[0].text)}</b> בשעה ${rem[0].time}${rem.length>1?` ועוד ${rem.length-1}`:''}.`);
+  if(rem.length) lines.push(`היום יש לך ${remWord(rem.length)}.`);
   const r=items.filter(i=>D(i.drawer)?.type==='routine'&&!isRoutineDone(i)).length;
   if(r) lines.push(`ויש ${r===1?'דבר קטן אחד':r+' דברים קטנים'} לעשות היום. בקצב שלך.`);
   if(!lines.length) lines.push('הכול רגוע כרגע. אם משהו עולה לך בראש, תכתבי לי ואני אשמור.');
@@ -410,7 +413,7 @@ function homeBubble(){
 function drawerPeek(d){
   const open=items.filter(i=>i.drawer===d.id&&isOpen(i));
   if(d.type==='deadline'){const x=open.sort((a,b)=>new Date(a.deadline)-new Date(b.deadline))[0];return x?`הקרוב: עד ${fShort(x.deadline)}`:'אין מה לבטל'}
-  if(d.type==='reminder'){const x=open.filter(i=>i.date).sort((a,b)=>remindAt(a)-remindAt(b))[0];return x?`${x.text} · ${fShort(remindAt(x))}`:'ריק'}
+  if(d.type==='reminder'){const n=open.filter(i=>i.date).length;return n?`יש ${remWord(n)}`:'ריק'}
   if(d.type==='routine'){if(!open.length)return 'ריק';const left=open.filter(i=>!isRoutineDone(i)).length;return left?`נשאר להיום: ${left}`:'הכול נעשה היום ✓'}
   if(d.type==='capsule'){const x=open.sort((a,b)=>new Date(a.target)-new Date(b.target))[0];return x?`הבא: ${fDate(x.target)}`:'ריק'}
   return open.length?open.slice(0,3).map(i=>i.text).join(' · '):'ריק';
@@ -452,7 +455,7 @@ function itemChips(i,d){
 function itemRow(i,d){
   const rdone=d.type==='routine'&&isRoutineDone(i);
   const cls=['it'];if(i.done)cls.push('done');if(rdone)cls.push('rdone');if(i.love)cls.push('marked');if(ui.justMarked===i.id)cls.push('anim');
-  const meta=i.done&&i.doneAt?`סומן ${fDT(i.doneAt)}`:rdone?'עשיתי היום ✓':fDate(i.created);
+  const meta=(i.done&&i.doneAt?`סומן ${fDT(i.doneAt)}`:rdone?'עשיתי היום ✓':fDate(i.created))+(i.desc?' · <span class="has-desc">📝 יש תיאור</span>':'');
   return `<li class="${cls.join(' ')}" data-id="${i.id}">
     <button type="button" class="ck" data-act="check" data-id="${i.id}" aria-label="${i.done||rdone?'ביטול סימון':'סימון שעשיתי'}: ${esc(i.text)}"><svg viewBox="0 0 16 16"><path d="M3 8.5l3.2 3L13 4.5"/></svg></button>
     <button type="button" class="body" data-act="editItem" data-id="${i.id}"><span class="tx">${esc(i.text)}</span><div class="mt">${meta}</div>${itemChips(i,d)}</button>
@@ -485,7 +488,7 @@ function renderDrawer(){
   ${ui.tool==='sticker'?`<div class="stickers">${STICKERS.map(s=>`<button type="button" class="stk" data-act="setSticker" data-v="${s}" aria-pressed="${stickers[d.id]===s}">${s}</button>`).join('')}<button type="button" class="stk" data-act="setSticker" data-v="" aria-label="בלי מדבקה">✕</button></div>`:''}
   ${renderPinned(d.id,`<p>${drawerBubble(d,open.slice())}</p>`)}
   ${open.length?`<ul class="items">${open.map(i=>itemRow(i,d)).join('')}</ul>`:`<div class="empty">אין כאן כלום כרגע</div>`}
-  ${again.length?`<div class="section-label"><span>קנית בעבר, להוסיף שוב?</span></div><div class="again">${again.map(x=>`<button type="button" data-act="again" data-text="${esc(x)}">+ ${esc(x)}</button>`).join('')}</div>`:''}
+  ${again.length?`<div class="section-label"><span>להוסיף שוב?</span></div><div class="again">${again.map(x=>`<button type="button" data-act="again" data-text="${esc(x)}">+ ${esc(x)}</button>`).join('')}</div>`:''}
   ${done.length?`<div class="section-label"><span>עשיתי ✓</span><button type="button" class="linkbtn" data-act="archive">להעביר לארכיון</button></div><ul class="items">${done.map(i=>itemRow(i,d)).join('')}</ul>`:''}
   ${arch.length?`<div class="section-label"><span>ארכיון</span><button type="button" class="linkbtn" data-act="toggleArch">${ui.showArchive?'להסתיר':'להציג ('+arch.length+')'}</button></div>${ui.showArchive?`<ul class="items">${arch.map(i=>itemRow(i,d)).join('')}</ul>`:''}`:''}
   ${d.custom?`<div class="section-label"><span></span>${ui.confirmDel?`<span class="row"><span>המשימות ברשימה יימחקו. בטוחה?</span><button type="button" class="danger solid" data-act="delDrawer">כן, למחוק</button><button type="button" class="linkbtn" data-act="cancelDel">לא</button></span>`:`<button type="button" class="danger" data-act="askDel">למחוק את הרשימה</button>`}</div>`:''}`;
@@ -669,6 +672,7 @@ function renderSheet(){
   el.innerHTML=wrap(it?'פרטים':'משימה חדשה',`
     <h2>${it?'פרטים':'מה לזכור?'}</h2>${info}
     <label class="field"><span>${it?'המשימה':'כתבי חופשי'}</span><input type="text" id="f-text" value="${esc(s.text)}" placeholder="${d.type==='list'?'למשל: קרם ידיים':d.type==='deadline'?'למשל: לבטל תור לשיניים':d.type==='reminder'?'למשל: להתקשר לסבתא':d.type==='routine'?'למשל: טיפות לעיניים':'למשל: לחדש רישיון'}" autocomplete="off"></label>
+    <label class="field"><span>תיאור (לא חובה)</span><textarea id="f-desc" dir="rtl" placeholder="פרטים נוספים, רק אם צריך">${esc(s.desc||'')}</textarea></label>
     <div class="field"><span>באיזו רשימה?</span><div class="row">${DRAWERS.map(x=>`<button type="button" class="pick" data-act="sheetDrawer" data-id="${x.id}" aria-pressed="${x.id===s.drawer}">${svg(x.icon)}${esc(x.name)}</button>`).join('')}</div></div>
     ${extra}
     <button type="button" class="save" data-act="saveItem">${it?'לשמור שינויים':'לשמור'}</button>
@@ -678,18 +682,18 @@ function renderSheet(){
 function readSheet(){
   const s=ui.sheet;if(!s)return;
   const v=id=>document.getElementById(id);
-  const map={'f-dname':'name','f-text':'text','f-deadline':'deadline','f-before':'before','f-t1':'t1','f-t2':'t2','f-target':'target','f-date':'date','f-time':'time'};
+  const map={'f-dname':'name','f-text':'text','f-deadline':'deadline','f-before':'before','f-t1':'t1','f-t2':'t2','f-target':'target','f-date':'date','f-time':'time','f-desc':'desc'};
   for(const id in map)if(v(id))s[map[id]]=v(id).value;
   for(const [id,k] of [['f-early','early'],['f-nag','nag'],['f-track','track'],['f-dayBefore','dayBefore']])if(v(id))s[k]=v(id).checked;
 }
 function openItemSheet(item){
   const tomorrow=dInput(addDays(now(),1));
   if(item){
-    ui.sheet={kind:'item',editId:item.id,drawer:item.drawer,text:item.text,deadline:dInput(item.deadline||addDays(now(),14)),before:item.before??2,early:!!item.early,nag:item.nag??true,
-      t1:(item.times||[])[0]||'09:00',t2:(item.times||[])[1]||'',track:!!item.track,target:dInput(item.target||addDays(now(),365)),date:item.date||tomorrow,time:item.time||'10:00',dayBefore:!!item.dayBefore};
+    ui.sheet={kind:'item',editId:item.id,drawer:item.drawer,text:item.text,desc:item.desc||'',deadline:dInput(item.deadline||addDays(now(),14)),before:item.before??2,early:!!item.early,nag:item.nag??true,
+      t1:(item.times||[])[0]||'09:00',t2:(item.times||[])[1]||'',track:!!item.track,target:dInput(item.target||now()),date:item.date||tomorrow,time:item.time||'10:00',dayBefore:!!item.dayBefore};
   }else{
     const dr=ui.view==='drawer'?ui.drawer:ui.view==='capsule'?'capsule':'pharm';
-    ui.sheet={kind:'item',drawer:dr,text:'',deadline:dInput(addDays(now(),14)),before:2,early:false,nag:true,t1:'09:00',t2:'',track:false,target:dInput(addDays(now(),365)),date:tomorrow,time:'10:00',dayBefore:false};
+    ui.sheet={kind:'item',drawer:dr,text:'',desc:'',deadline:dInput(addDays(now(),14)),before:2,early:false,nag:true,t1:'09:00',t2:'',track:false,target:dInput(now()),date:tomorrow,time:'10:00',dayBefore:false};
   }
   renderSheet();
 }
@@ -704,6 +708,7 @@ function saveItem(){
   let o=s.editId!=null?items.find(i=>i.id===s.editId):null;
   if(!o){o={id:nextId(items),created:iso(now()),done:false,archived:false,love:false};items.push(o)}
   o.drawer=d.id;o.text=s.text.trim();
+  if((s.desc||'').trim())o.desc=s.desc.trim();else delete o.desc;
   ['deadline','before','early','nag','times','target','date','time','dayBefore'].forEach(k=>delete o[k]);
   if(d.type==='deadline')Object.assign(o,{deadline:atNoon(s.deadline),before:+s.before,early:s.early,nag:s.nag});
   if(d.type==='reminder')Object.assign(o,{date:s.date,time:s.time||'10:00',dayBefore:s.dayBefore});

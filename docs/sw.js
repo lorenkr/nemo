@@ -1,5 +1,5 @@
 // Pitkit service worker: offline shell + push notifications.
-const CACHE = 'pitkit-v5';
+const CACHE = 'pitkit-v6';
 const SHELL = ['./', './index.html', './config.js', './manifest.webmanifest', './icon-v2-180.png', './icon-v2-192.png', './icon-v2-512.png'];
 
 self.addEventListener('install', e => {
